@@ -744,4 +744,9 @@ document.getElementById('remove-barrier-button').onclick = () => game.setGameSta
 document.getElementById('end-turn-button').onclick = () => game.endTurn();
 document.getElementById('new-game-button').onclick = () => game.initialize();
 
-setInterval(() => game.boardDisplay.renderBoard(), 100);
+function animate() {
+    game.boardDisplay.renderBoard();
+    requestAnimationFrame(() => animate());
+}
+
+requestAnimationFrame(animate);
