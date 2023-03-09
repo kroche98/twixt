@@ -1,0 +1,31 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+canvas {
+    background: #eee;
+    display: block;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+#panel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+button.active-button {
+    background-color: palegreen;
+}
