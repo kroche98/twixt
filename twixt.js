@@ -542,15 +542,15 @@ class Game {
             if (state[i] === "A") {
                 buttons[i].style.visibility = "visible";
                 buttons[i].disabled = false;
-                buttons[i].classList.add("active-button");
+                buttons[i].classList.add("current-selection");
             } else if (state[i] === "C") {
                 buttons[i].style.visibility = "visible";
                 buttons[i].disabled = false;
-                buttons[i].classList.remove("active-button");
+                buttons[i].classList.remove("current-selection");
             } else if (state[i] === "D") {
                 buttons[i].style.visibility = "visible";
                 buttons[i].disabled = true;
-                buttons[i].classList.remove("active-button");
+                buttons[i].classList.remove("current-selection");
             } else if (state[i] === "H") {
                 buttons[i].style.visibility = "hidden";
             }

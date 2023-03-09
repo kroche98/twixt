@@ -13,6 +13,8 @@ canvas {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    width: 450px;
+    text-align: center;
 }
 
 #button-container {
@@ -21,8 +23,10 @@ canvas {
     align-items: stretch;
 }
 
-button.active-button {
-    background-color: palegreen;
+button.current-selection {
+    background-color: rgb(109, 109, 109);
+    color: white;
+    font-weight: bold;
 }
 
 #player-info {
