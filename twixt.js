@@ -599,6 +599,9 @@ class Game {
     }
 
     onmousedown(e) {
+        if (e.button !== 0) {
+            return; // ignore anything which is not the left mouse button
+        }
         let peg;
         switch(this.gameState) {
             case 1: // place peg
@@ -631,6 +634,9 @@ class Game {
     }
 
     onmouseup(e) {
+        if (e.button !== 0) {
+            return; // ignore anything which is not the left mouse button
+        }
         const peg = this.boardDisplay.windowToPeg(e.clientX, e.clientY);
         switch(this.gameState) {
             case 1: // place peg
