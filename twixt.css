@@ -29,3 +29,7 @@ canvas {
 button.active-button {
     background-color: palegreen;
 }
+
+#player-info {
+    text-transform: uppercase;
+}

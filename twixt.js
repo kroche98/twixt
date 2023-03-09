@@ -493,12 +493,17 @@ class BoardDisplay {
 /** Game controller */
 class Game {
     constructor() {
+        this.initialize();
+    }
+
+    /** Initialize the internal state */
+    initialize() {
         this.board = new Board();
         this.boardDisplay = new BoardDisplay(this.board, this)
 
         this.currentPlayer = Player.R;
 
-        this.gameState = 1;
+        this.gameState = 0;
         this.currentEndpointPeg = null;
         this.movingEndpoint = null;
 
@@ -506,14 +511,22 @@ class Game {
         this.boardDisplay.canvas.onmouseup = (e) => this.onmouseup(e);
         this.boardDisplay.canvas.onmousemove = (e) => this.onmousemove(e);
 
-        this.updateTurnDiv()
+        this.winner = null;
+
+        this.setGameState(1);
     }
 
     /**
      * Update the state of the buttons
      * The new state should be passed in as a string giving the desired state for
      * all the buttons
-     * A = active, C = clickable, D = disabled
+     * 1. Place Peg button
+     * 2. Place Barrier button
+     * 3. Remove Peg button
+     * 4. Remove Barrier button
+     * 5. End Turn button
+     * 
+     * A = active, C = clickable, D = disabled, H = hidden
      * @param {String} state the desired button state
      */
     setButtonState(state) {
@@ -523,28 +536,66 @@ class Game {
             document.getElementById("remove-peg-button"),
             document.getElementById("remove-barrier-button"),
             document.getElementById("end-turn-button"),
+            document.getElementById("new-game-button"),
         ]
-        for (let i=0; i<5; i++) {
+        for (let i=0; i<6; i++) {
             if (state[i] === "A") {
+                buttons[i].style.visibility = "visible";
                 buttons[i].disabled = false;
                 buttons[i].classList.add("active-button");
             } else if (state[i] === "C") {
+                buttons[i].style.visibility = "visible";
                 buttons[i].disabled = false;
                 buttons[i].classList.remove("active-button");
             } else if (state[i] === "D") {
+                buttons[i].style.visibility = "visible";
                 buttons[i].disabled = true;
                 buttons[i].classList.remove("active-button");
+            } else if (state[i] === "H") {
+                buttons[i].style.visibility = "hidden";
             }
         }
     }
 
-    /** Update the turn indicator */
-    updateTurnDiv() {
-        const div = document.getElementById("which-player");
-        const txt = (this.currentPlayer === Player.R) ? "Red Player's Turn" : "Black Player's Turn";
-        const color = (this.currentPlayer === Player.R) ? COLORS.red : COLORS.black;
-        div.innerText = txt;
-        div.style.color = color;
+    /** Update the indicator of whose turn it is and what the turn state is*/
+    updateInfoDiv() {
+        const playerDiv = document.getElementById("player-info");
+        let txt, color;
+        if (this.winner === Player.R) {
+            txt = "Red Player Wins!";
+            color = COLORS.red;
+        } else if (this.winner === Player.B) {
+            txt = "Black Player Wins!";
+            color = COLORS.black;
+        } else if (this.currentPlayer === Player.R) {
+            txt = "Red Player's Turn";
+            color = COLORS.red;
+        } else if (this.currentPlayer === Player.B) {
+            txt = "Black Player's Turn";
+            color = COLORS.black;
+        }
+        playerDiv.innerText = txt;
+        playerDiv.style.color = color;
+
+        const stateDiv = document.getElementById("state-info");
+        switch(this.gameState) {
+            case 1:
+                txt = "Click on an empty space to place a peg."
+                break;
+            case 2:
+                txt = "Click and drag between two pegs to place a barrier."
+                break;
+            case 3:
+                txt = "Click on a peg to remove it."
+                break;
+            case 4:
+                txt = "Click and drag between two pegs to remove the barrier between them."
+                break;
+            case 5:
+                txt = "Game over!";
+                break;
+        }
+        stateDiv.innerText = txt;
     }
 
     onmousedown(e) {
@@ -574,6 +625,8 @@ class Game {
                     }
                 }
                 break;
+            case 5: // game over
+                break;
         }
     }
 
@@ -594,7 +647,8 @@ class Game {
                         let success = this.board.placeBarrier(this.currentEndpointPeg, peg, this.currentPlayer);
                         if (success) {
                             if (this.board.gameWon(this.currentPlayer)) {
-                                alert(`${this.currentPlayer} Player wins!`)
+                                this.winner = this.currentPlayer;
+                                this.setGameState(5);
                             }
                         }
                     }
@@ -616,6 +670,8 @@ class Game {
                 this.currentEndpointPeg = null;
                 this.movingEndpoint = null;
                 break;
+            case 5: // game over
+                break;
         }
     }
 
@@ -631,6 +687,8 @@ class Game {
             case 4: // remove barrier
                 this.movingEndpoint = {x: e.clientX, y: e.clientY};
                 break;
+            case 5: // game over
+                break;            
         }
     }
 
@@ -645,41 +703,45 @@ class Game {
     setGameState(state) {
         switch(state) {
             case 1:
-                this.setButtonState("ADCCD");
+                this.setButtonState("ADCCDH");
                 break;
             case 2:
                 this.currentEndpointPeg = null;
                 this.movingEndpoint = null;
-                this.setButtonState("DADDC");
+                this.setButtonState("DADDCH");
                 break;
             case 3:
-                this.setButtonState("CDACD");
+                this.setButtonState("CDACDH");
                 break;
             case 4:
                 this.currentEndpointPeg = null;
                 this.movingEndpoint = null;
-                this.setButtonState("CDCAD");
+                this.setButtonState("CDCADH");
                 break;
+            case 5:
+                this.currentEndpointPeg = null;
+                this.movingEndpoint = null;
+                this.setButtonState("DDDDDC")
         }
         this.gameState = state;
+        this.updateInfoDiv()
     }
 
     /** End a player's turn and prepare for the next player's turn */
     endTurn() {
         this.currentPlayer = (this.currentPlayer===Player.R) ? Player.B : Player.R;
-        this.updateTurnDiv();
         this.setGameState(1);
     }
 }
 
 
 const game = new Game();
-game.setGameState(1);
 
 document.getElementById('place-peg-button').onclick = () => game.setGameState(1);
 document.getElementById('place-barrier-button').onclick = () => game.setGameState(2);
 document.getElementById('remove-peg-button').onclick = () => game.setGameState(3);
 document.getElementById('remove-barrier-button').onclick = () => game.setGameState(4);
 document.getElementById('end-turn-button').onclick = () => game.endTurn();
+document.getElementById('new-game-button').onclick = () => game.initialize();
 
 setInterval(() => game.boardDisplay.renderBoard(), 100);
