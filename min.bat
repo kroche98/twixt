@@ -1,0 +1,1 @@
+minify twixt.js > twixt.min.js
