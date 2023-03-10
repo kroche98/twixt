@@ -329,7 +329,9 @@ class Board {
 
 
 class BoardDisplay {
-    TWIXT_GRID_WIDTH = 24; // pixels
+    GRID_WIDTH = 20; // width in pixels of one grid square
+    CLICK_RADIUS = Math.floor(0.42 * this.GRID_WIDTH); // click radius around a peg
+    PEG_WIDTH = Math.floor(this.GRID_WIDTH / 4); // diameter of one peg
 
     /**
      * View of the board
@@ -341,6 +343,8 @@ class BoardDisplay {
         this.board = board;
         this.game = game;
         this.canvas = document.getElementById("twixt-canvas");
+        this.canvas.height = this.GRID_WIDTH * 25;
+        this.canvas.width = this.GRID_WIDTH * 25;
     }
 
     /**
@@ -360,13 +364,13 @@ class BoardDisplay {
     /**
      * Convert canvas coordinates to board coordinates
      * @param {Object} coords object with x and y properties
-     * @returns {Peg}
+     * @returns {Peg | null}
      */
     _canvasToPeg(coords) {
-        const x = Math.round(coords.x / this.TWIXT_GRID_WIDTH);
-        const y = Math.round(coords.y / this.TWIXT_GRID_WIDTH);
-        // click location must be within 10 pixels of peg
-        if ((coords.x-x*this.TWIXT_GRID_WIDTH)**2 + (coords.y-y*this.TWIXT_GRID_WIDTH)**2 <= 100) {
+        const x = Math.round(coords.x / this.GRID_WIDTH);
+        const y = Math.round(coords.y / this.GRID_WIDTH);
+        // click location must be within CLICK_RADIUS pixels of peg
+        if ((coords.x-x*this.GRID_WIDTH)**2 + (coords.y-y*this.GRID_WIDTH)**2 <= this.CLICK_RADIUS**2) {
             return new Peg(x, y);
         }
         return null;
@@ -394,32 +398,32 @@ class BoardDisplay {
     
         // draw top border
         ctx.beginPath();
-        ctx.moveTo(this.TWIXT_GRID_WIDTH*2, this.TWIXT_GRID_WIDTH*1.5);
-        ctx.lineTo(this.TWIXT_GRID_WIDTH*23, this.TWIXT_GRID_WIDTH*1.5);
+        ctx.moveTo(this.GRID_WIDTH*2, this.GRID_WIDTH*1.5);
+        ctx.lineTo(this.GRID_WIDTH*23, this.GRID_WIDTH*1.5);
         ctx.strokeStyle = COLORS.red;
         ctx.stroke();
         ctx.closePath();
     
         // draw bottom border
         ctx.beginPath();
-        ctx.moveTo(this.TWIXT_GRID_WIDTH*2, this.TWIXT_GRID_WIDTH*23.5);
-        ctx.lineTo(this.TWIXT_GRID_WIDTH*23, this.TWIXT_GRID_WIDTH*23.5);
+        ctx.moveTo(this.GRID_WIDTH*2, this.GRID_WIDTH*23.5);
+        ctx.lineTo(this.GRID_WIDTH*23, this.GRID_WIDTH*23.5);
         ctx.strokeStyle = COLORS.red;
         ctx.stroke();
         ctx.closePath();
     
         // draw left border
         ctx.beginPath();
-        ctx.moveTo(this.TWIXT_GRID_WIDTH*1.5, this.TWIXT_GRID_WIDTH*2);
-        ctx.lineTo(this.TWIXT_GRID_WIDTH*1.5, this.TWIXT_GRID_WIDTH*23);
+        ctx.moveTo(this.GRID_WIDTH*1.5, this.GRID_WIDTH*2);
+        ctx.lineTo(this.GRID_WIDTH*1.5, this.GRID_WIDTH*23);
         ctx.strokeStyle = COLORS.black;
         ctx.stroke();
         ctx.closePath();
     
         // draw right border
         ctx.beginPath();
-        ctx.moveTo(this.TWIXT_GRID_WIDTH*23.5, this.TWIXT_GRID_WIDTH*2);
-        ctx.lineTo(this.TWIXT_GRID_WIDTH*23.5, this.TWIXT_GRID_WIDTH*23);
+        ctx.moveTo(this.GRID_WIDTH*23.5, this.GRID_WIDTH*2);
+        ctx.lineTo(this.GRID_WIDTH*23.5, this.GRID_WIDTH*23);
         ctx.strokeStyle = COLORS.black;
         ctx.stroke();
         ctx.closePath();
@@ -428,17 +432,17 @@ class BoardDisplay {
         for (let i=1; i<=24; i++) {
             for (let j=1; j<=24; j++) {
                 let val = this.board.getPeg([i,j]);
-                let x = this.TWIXT_GRID_WIDTH*i;
-                let y = this.TWIXT_GRID_WIDTH*j;
+                let x = this.GRID_WIDTH*i;
+                let y = this.GRID_WIDTH*j;
                 ctx.beginPath();
                 if (val === Player.X) {
-                    ctx.arc(x, y, 3, 0, 2*Math.PI);
+                    ctx.arc(x, y, this.PEG_WIDTH/2, 0, 2*Math.PI);
                     ctx.fillStyle = COLORS.gray;
                 } else if (val === Player.R) {
-                    ctx.arc(x, y, 6, 0, 2*Math.PI);
+                    ctx.arc(x, y, this.PEG_WIDTH, 0, 2*Math.PI);
                     ctx.fillStyle = COLORS.red;
                 } else if (val === Player.B) {
-                    ctx.arc(x, y, 6, 0, 2*Math.PI);
+                    ctx.arc(x, y, this.PEG_WIDTH, 0, 2*Math.PI);
                     ctx.fillStyle = COLORS.black;
                 }
                 ctx.fill();
@@ -449,8 +453,8 @@ class BoardDisplay {
         // draw red barriers
         for (const [peg1, peg2] of this.board.redBarrierState) {
             ctx.beginPath();
-            ctx.moveTo(this.TWIXT_GRID_WIDTH*peg1.x, this.TWIXT_GRID_WIDTH*peg1.y);
-            ctx.lineTo(this.TWIXT_GRID_WIDTH*peg2.x, this.TWIXT_GRID_WIDTH*peg2.y);
+            ctx.moveTo(this.GRID_WIDTH*peg1.x, this.GRID_WIDTH*peg1.y);
+            ctx.lineTo(this.GRID_WIDTH*peg2.x, this.GRID_WIDTH*peg2.y);
             ctx.strokeStyle = COLORS.red;
             ctx.stroke();
             ctx.closePath();
@@ -459,8 +463,8 @@ class BoardDisplay {
         // draw black barriers
         for (const [peg1, peg2] of this.board.blackBarrierState) {
             ctx.beginPath();
-            ctx.moveTo(this.TWIXT_GRID_WIDTH*peg1.x, this.TWIXT_GRID_WIDTH*peg1.y);
-            ctx.lineTo(this.TWIXT_GRID_WIDTH*peg2.x, this.TWIXT_GRID_WIDTH*peg2.y);
+            ctx.moveTo(this.GRID_WIDTH*peg1.x, this.GRID_WIDTH*peg1.y);
+            ctx.lineTo(this.GRID_WIDTH*peg2.x, this.GRID_WIDTH*peg2.y);
             ctx.strokeStyle = COLORS.black;
             ctx.stroke();
             ctx.closePath();
@@ -470,7 +474,7 @@ class BoardDisplay {
         if (this.game.currentEndpointPeg) {
             const movingCoords = this._windowToCanvas(this.game.movingEndpoint.x, this.game.movingEndpoint.y);
             ctx.beginPath();
-            ctx.moveTo(this.TWIXT_GRID_WIDTH*this.game.currentEndpointPeg.x, this.TWIXT_GRID_WIDTH*this.game.currentEndpointPeg.y);
+            ctx.moveTo(this.GRID_WIDTH*this.game.currentEndpointPeg.x, this.GRID_WIDTH*this.game.currentEndpointPeg.y);
             ctx.lineTo(movingCoords.x, movingCoords.y);
             if (this.game.gameState === 2) {
                 // player is drawing a new barrier
